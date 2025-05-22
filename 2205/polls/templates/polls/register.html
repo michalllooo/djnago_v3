@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejestracja - Sklep Internetowy</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+</head>
+<body>
+    <div class="shop-header">
+        <h1>Sklep Internetowy</h1>
+    </div>
+    <div class="register-container">
+        <h2>Rejestracja</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Zarejestruj się</button>
+        </form>
+        <div class="login-link">
+            <p>Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a></p>
+        </div>
+    </div>
+</body>
+</html>

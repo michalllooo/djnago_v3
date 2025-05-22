@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Sklep Internetowy</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+</head>
+<body>
+    <div class="shop-header">
+        <h1>Rynek Internetowy</h1>
+        <div class="logout-link">
+            <a href="{% url 'logout' %}">Wyloguj się</a>
+        </div>
+    </div>
+    <div class="side-blocks-container">
+        <div class="side-blocks-left">
+            <a href="{% url 'index' %}" class="side-block">
+                <img src="{% static 'img/owoce.jpg' %}" alt="Owoce">
+            </a>
+            <a href="{% url 'warzywa' %}" class="side-block">
+                <img src="{% static 'img/warzywa.jpg' %}" alt="Warzywa">
+            </a>
+        </div>
+        <div class="side-blocks-left" style="right:32px; left:auto;">
+            <a href="{% url 'ser' %}" class="side-block">
+                <img src="{% static 'img/ser.jpg' %}" alt="Ser">
+            </a>
+            <a href="{% url 'pieczywo' %}" class="side-block">
+                <img src="{% static 'img/pieczywo.jpg' %}" alt="Pieczywo">
+            </a>
+        </div>
+    </div>
+    {% verbatim %}
+    <div id="shop-app" class="shop-main-vertical">
+        <div class="header-cart-summary">
+            <h2>Koszyk</h2>
+            <ul>
+                <li v-for="item in cartItems" :key="item.id">
+                    {{ item.name }} x {{ item.qty }} = {{ (item.price * item.qty).toFixed(2) }} zł
+                </li>
+            </ul>
+            <div class="cart-total">
+                <strong>Suma: {{ totalPrice.toFixed(2) }} zł</strong>
+            </div>
+        </div>
+        <div class="products-list">
+            <div class="product-card" v-for="product in products" :key="product.id">
+                <div class="product-image">
+                    <img :src="product.image" alt="Produkt">
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p class="product-price">{{ product.price.toFixed(2) }} zł</p>
+                    <div class="product-actions">
+                        <button @click="removeFromCart(product)" :disabled="!cart[product.id]">-</button>
+                        <span class="cart-qty">{{ cart[product.id] || 0 }}</span>
+                        <button @click="addToCart(product)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endverbatim %}
+    <script>
+      
+        const ALL_PRODUCTS = [
+            {id: 1, name: 'japko ', price: 4, image: '{% static "img/jablko.jpg" %}'},
+            {id: 2, name: 'arbuz ', price: 7.50, image: '{% static "img/arbuz.jpg" %}'},
+            {id: 3, name: 'pomarancza ', price: 5.4, image: '{% static "img/pomarancza.jpg" %}'},
+            {id: 4, name: 'ogorek ', price: 6.43, image: '{% static "img/ogorek.jpg" %}'},
+            {id: 5, name: 'pomidor ', price: 3.49, image: '{% static "img/pomidor.jpg" %}'},
+            {id: 6, name: 'marchew ', price: 4.70, image: '{% static "img/marchew.jpg" %}'},
+            {id: 7, name: 'gouda', price: 8.99, image: '{% static "img/gouda.jpg" %}'},
+            {id: 8, name: 'edam', price: 9.49, image: '{% static "img/edam.jpg" %}'},
+            {id: 9, name: 'camembert', price: 12.99, image: '{% static "img/camembert.jpg" %}'},
+            {id: 10, name: 'kajzerka', price: 1.20, image: '{% static "img/kajzerka.jpg" %}'},
+            {id: 11, name: 'chleb', price: 3.99, image: '{% static "img/chleb.jpg" %}'},
+            {id: 12, name: 'bagietka', price: 2.49, image: '{% static "img/bagietka.jpg" %}'}
+        ];
+
+        const USERNAME = "{{ request.user.username|escapejs }}";
+
+        function getCartKey() {
+            return 'shared_cart_' + USERNAME;
+        }
+        function loadCart() {
+            try {
+                return JSON.parse(localStorage.getItem(getCartKey())) || {};
+            } catch {
+                return {};
+            }
+        }
+        function saveCart(cart) {
+            localStorage.setItem(getCartKey(), JSON.stringify(cart));
+        }
+
+        new Vue({
+            el: '#shop-app',
+            data: {
+               
+                products: [
+                    {id: 1, name: 'japko ', price: 4, image: '{% static "img/jablko.jpg" %}'},
+                    {id: 2, name: 'arbuz ', price: 7.50, image: '{% static "img/arbuz.jpg" %}'},
+                    {id: 3, name: 'pomarancza ', price: 5.4, image: '{% static "img/pomarancza.jpg" %}'}
+                ],
+                cart: loadCart()
+            },
+            computed: {
+                cartItems() {
+                    // Pokazuje produkty z koszyka z wszystkich kategorii
+                    return ALL_PRODUCTS
+                        .filter(p => this.cart[p.id])
+                        .map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            qty: this.cart[p.id]
+                        }));
+                },
+                totalPrice() {
+                    return this.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+                }
+            },
+            watch: {
+                cart: {
+                    handler(newCart) {
+                        saveCart(newCart);
+                    },
+                    deep: true
+                }
+            },
+            methods: {
+                addToCart(product) {
+                    if (!this.cart[product.id]) this.$set(this.cart, product.id, 0);
+                    this.cart[product.id]++;
+                },
+                removeFromCart(product) {
+                    if (this.cart[product.id] > 0) this.cart[product.id]--;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
