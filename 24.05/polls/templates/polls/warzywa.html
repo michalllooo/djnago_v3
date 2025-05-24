@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rynek Internetowy</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+</head>
+<body>
+    <div class="shop-header">
+        <h1>Rynek Internetowy</h1>
+        <div class="logout-link">
+            <a href="{% url 'logout' %}">Wyloguj się</a>
+        </div>
+    </div>
+    <div class="side-blocks-container">
+        <div class="side-blocks-left">
+            <a href="{% url 'index' %}" class="side-block">
+                <img src="{% static 'img/owoce.jpg' %}" alt="Owoce">
+            </a>
+            <a href="{% url 'warzywa' %}" class="side-block">
+                <img src="{% static 'img/warzywa.jpg' %}" alt="Warzywa">
+            </a>
+        </div>
+        <div class="side-blocks-left" style="right:32px; left:auto;">
+            <a href="{% url 'ser' %}" class="side-block">
+                <img src="{% static 'img/ser.jpg' %}" alt="Ser">
+            </a>
+            <a href="{% url 'pieczywo' %}" class="side-block">
+                <img src="{% static 'img/pieczywo.jpg' %}" alt="Pieczywo">
+            </a>
+        </div>
+    </div>
+    {% verbatim %}
+    <div id="shop-app" class="shop-main-vertical">
+        <div class="header-cart-summary">
+            <h2>Koszyk</h2>
+            <ul>
+                <li v-for="item in cartItems" :key="item.id">
+                    {{ item.name }} x {{ item.qty }} = {{ (item.price * item.qty).toFixed(2) }} zł
+                </li>
+            </ul>
+            <div class="cart-total">
+                <strong>Suma: {{ totalPrice.toFixed(2) }} zł</strong>
+            </div>
+        </div>
+        <div class="products-list">
+            <div class="product-card" v-for="product in products" :key="product.id">
+                <div class="product-image">
+                    <img :src="product.image" alt="Produkt">
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p class="product-price">{{ product.price.toFixed(2) }} zł</p>
+                    <div class="product-actions">
+                        <button @click="removeFromCart(product)" :disabled="!cart[product.id]">-</button>
+                        <span class="cart-qty">{{ cart[product.id] || 0 }}</span>
+                        <button @click="addToCart(product)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endverbatim %}
+    <div style="width:100%;text-align:center;margin:40px 0 20px 0;">
+        <a href="{% url 'platnosci' %}" class="go-to-payment-btn" style="float:none;display:inline-block;">Przejdź do płatności</a>
+    </div>
+    <script>
+    
+        const USERNAME = "{{ request.user.username|escapejs }}";
+
+       
+        const ALL_PRODUCTS = [
+           {id: 1, name: 'japko ', price: 4, image: '{% static "img/jablko.jpg" %}'},
+            {id: 2, name: 'arbuz ', price: 7.50, image: '{% static "img/arbuz.jpg" %}'},
+            {id: 3, name: 'pomarancza ', price: 5.4, image: '{% static "img/pomarancza.jpg" %}'},
+           
+           
+            {id: 4, name: 'ogorek ', price: 6.43, image: '{% static "img/ogorek.jpg" %}'},
+            {id: 5, name: 'pomidor ', price: 3.49, image: '{% static "img/pomidor.jpg" %}'},
+            {id: 6, name: 'marchew ', price: 4.70, image: '{% static "img/marchew.jpg" %}'},
+            
+             {id: 13, name: 'borowka ', price: 8.5, image: '{% static "img/borowka.jpg" %}'},
+            {id: 14, name: 'malina ', price: 10, image: '{% static "img/malina.jpg" %}'},
+            {id: 15, name: 'porzeczka ', price: 5.4, image: '{% static "img/porzeczka.jpg" %}'},
+            {id: 16, name: 'truskawka ', price: 7.4, image: '{% static "img/truskawka.jpg" %}'},
+            {id: 17, name: 'granat ', price: 12, image: '{% static "img/granat.jpg" %}'},
+            {id: 18, name: 'cytryna ', price: 3.49, image: '{% static "img/cytryna.jpg" %}'},
+            {id: 19, name: 'marakuja ', price: 14.50, image: '{% static "img/marakuja.jpg" %}'},
+            {id: 20, name: 'mandarynka ', price: 6.70, image: '{% static "img/mandarynka.jpg" %}'},
+            {id: 21, name: 'winogrono ', price: 10, image: '{% static "img/winogrono.jpg" %}'},
+            {id: 22, name: 'cebula ', price: 6.34, image: '{% static "img/ceb.jpg" %}'},
+            {id: 23, name: 'cukinia ', price: 10.50, image: '{% static "img/cukinia.jpg" %}'},
+            {id: 24, name: 'dynia ', price: 17, image: '{% static "img/dynia.jpg" %}'},
+            {id: 25, name: 'papryka ', price: 10, image: '{% static "img/pap.jpg" %}'},
+            {id: 26, name: 'pietruszka ', price: 12, image: '{% static "img/pietruszka.jpg" %}'},
+            {id: 27, name: 'salata ', price: 14.20, image: '{% static "img/sal.jpg" %}'},
+            {id: 28, name: 'Chleb pszenny ', price: 14, image: '{% static "img/psz.jpg" %}'},
+            {id: 29, name: 'Chleb żytni ', price: 16.20, image: '{% static "img/zyt.jpg" %}'},
+            {id: 30, name: 'Chleb razowy ', price: 8.20, image: '{% static "img/raz.jpg" %}'},
+            {id: 31, name: 'Chleb graham ', price: 17.20, image: '{% static "img/gra.jpg" %}'},
+            {id: 32, name: 'Chleb orkiszowy ', price: 15.20, image: '{% static "img/ork.jpg" %}'},
+            {id: 33, name: 'Chleb tostowy ', price: 13.50, image: '{% static "img/tos.jpg" %}'},
+            {id: 34, name: 'Chleb na zakwasie ', price: 16.30, image: '{% static "img/zak.jpg" %}'},
+            {id: 35, name: 'Chleb pełnoziarnisty ', price: 14.50, image: '{% static "img/pel.jpg" %}'},
+            {id: 36, name: 'Chleb wieloziarnisty ', price: 13.99, image: '{% static "img/wie.jpg" %}'},
+            {id: 37, name: 'Gouda ', price: 20, image: '{% static "img/gou.jpg" %}'},
+            {id: 38, name: 'Cheddar ', price: 22, image: '{% static "img/che.jpg" %}'},
+            {id: 39, name: 'Mozzarella ', price: 22.5, image: '{% static "img/moz.jpg" %}'},
+            {id: 40, name: 'Camembert ', price: 19, image: '{% static "img/cam.jpg" %}'},
+            {id: 41, name: 'Brie ', price: 25, image: '{% static "img/bri.jpg" %}'},
+            {id: 42, name: 'Feta ', price: 24.4, image: '{% static "img/fet.jpg" %}'},
+            {id: 43, name: 'Parmezan ', price: 25.80, image: '{% static "img/par.jpg" %}'},
+            {id: 44, name: 'Emmentaler ', price: 29.99, image: '{% static "img/emm.jpg" %}'},
+            {id: 45, name: 'Roquefort ', price: 27.40, image: '{% static "img/roq.jpg" %}'},
+        ];
+
+        function getCartKey() {
+            return 'shared_cart_' + USERNAME;
+        }
+        function loadCart() {
+            try {
+                return JSON.parse(localStorage.getItem(getCartKey())) || {};
+            } catch {
+                return {};
+            }
+        }
+        function saveCart(cart) {
+            localStorage.setItem(getCartKey(), JSON.stringify(cart));
+        }
+
+        new Vue({
+            el: '#shop-app',
+            data: {
+                products: [
+                    {id: 4, name: 'Produkt 1', price: 49.99, image: '{% static "img/ogorek.jpg" %}'},
+                    {id: 5, name: 'Produkt 2', price: 79.99, image: '{% static "img/pomidor.jpg" %}'},
+                    {id: 6, name: 'Produkt 3', price: 29.99, image: '{% static "img/marchew.jpg" %}'},
+                     {id: 22, name: 'cebula ', price: 6.34, image: '{% static "img/ceb.jpg" %}'},
+            {id: 23, name: 'cukinia ', price: 10.50, image: '{% static "img/cukinia.jpg" %}'},
+            {id: 24, name: 'dynia ', price: 17, image: '{% static "img/dynia.jpg" %}'},
+            {id: 25, name: 'papryka ', price: 10, image: '{% static "img/pap.jpg" %}'},
+            {id: 26, name: 'pietruszka ', price: 12, image: '{% static "img/pietruszka.jpg" %}'},
+            {id: 27, name: 'salata ', price: 14.20, image: '{% static "img/sal.jpg" %}'},
+                ],
+                cart: loadCart()
+            },
+            computed: {
+                cartItems() {
+                    return ALL_PRODUCTS
+                        .filter(p => this.cart[p.id])
+                        .map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            qty: this.cart[p.id]
+                        }));
+                },
+                totalPrice() {
+                    return this.cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+                }
+            },
+            watch: {
+                cart: {
+                    handler(newCart) {
+                        saveCart(newCart);
+                    },
+                    deep: true
+                }
+            },
+            methods: {
+                addToCart(product) {
+                    if (!this.cart[product.id]) this.$set(this.cart, product.id, 0);
+                    this.cart[product.id]++;
+                },
+                removeFromCart(product) {
+                    if (this.cart[product.id] > 0) this.cart[product.id]--;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

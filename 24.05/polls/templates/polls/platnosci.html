@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Płatności</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/shop.css' %}">
+    <style>
+        .payment-bg-images {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .payment-bg-images img {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            object-fit: cover;
+            opacity: 0.85;
+            transition: all 0.2s;
+        }
+       
+        .payment-bg-images .img1 { 
+            top: 40%; left: 50%;
+            transform: translate(-150%, -150%);
+        }
+        .payment-bg-images .img2 { 
+            top: 40%; left: 50%;
+            transform: translate(50%, -150%);
+        }
+        .payment-bg-images .img3 { 
+            top: 40%; left: 50%;
+            transform: translate(-150%, 50%);
+        }
+        .payment-bg-images .img4 { 
+            top: 40%; left: 50%;
+            transform: translate(50%, 50%);
+        }
+        .payment-form-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .payment-form-box {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px rgba(44,124,255,0.13);
+            padding: 38px 38px 28px 38px;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            border: 2px solid #2d7cff;
+        }
+        .payment-form-box h2 {
+            text-align: center;
+            color: #2d7cff;
+            margin-bottom: 24px;
+        }
+        .payment-form-box form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .payment-form-box input[type="text"] {
+            padding: 10px;
+            border: 1px solid #b3c6ff;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        .payment-form-box label {
+            font-weight: bold;
+            color: #2d7cff;
+            margin-bottom: 4px;
+        }
+        .payment-form-box .payment-options {
+            display: flex;
+            gap: 18px;
+            margin-top: 8px;
+        }
+        .payment-form-box button[type="submit"] {
+            background: #2d7cff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+        .payment-form-box button[type="submit"]:hover {
+            background: #1a5ed8;
+        }
+        @media (max-width: 900px) {
+            .payment-bg-images img {
+                width: 140px;
+                height: 140px;
+            }
+            .payment-bg-images .img1 { transform: translate(-110%, -110%); }
+            .payment-bg-images .img2 { transform: translate(10%, -110%); }
+            .payment-bg-images .img3 { transform: translate(-110%, 10%); }
+            .payment-bg-images .img4 { transform: translate(10%, 10%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-bg-images">
+        <img src="{% static 'img/baz.jpg' %}" class="img1" alt="">
+        <img src="{% static 'img/baz2.jpg' %}" class="img2" alt="">
+        <img src="{% static 'img/baz3.jpg' %}" class="img3" alt="">
+        <img src="{% static 'img/baz4.jpg' %}" class="img4" alt="">
+    </div>
+    <div class="payment-form-container">
+        <div class="payment-form-box">
+            <h2>Formularz płatności</h2>
+            <form>
+                <div>
+                    <label for="fname">Imię:</label>
+                    <input type="text" id="fname" name="fname" required>
+                </div>
+                <div>
+                    <label for="lname">Nazwisko:</label>
+                    <input type="text" id="lname" name="lname" required>
+                </div>
+                <div>
+                    <label for="address">Adres rozliczeniowy:</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                <div>
+                    <label>Opcja płatności:</label>
+                    <div class="payment-options">
+                        <label><input type="radio" name="paymethod" value="blik" required> BLIK</label>
+                        <label><input type="radio" name="paymethod" value="konto" required> Na numer konta</label>
+                    </div>
+                </div>
+                <button type="submit">Zapłać</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
